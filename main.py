@@ -6,7 +6,6 @@ CORS(app)
 
 import os
 
-
 from langchain.llms import OpenAI
 
 from dotenv import load_dotenv, find_dotenv
@@ -38,6 +37,11 @@ def init():
     
 @app.route('/input', methods=['POST']) 
 def create_agent():
+
+    if request.is_json:
+        data = request.get_json()
+        question = data.get('question')
+
     csv_files = os.listdir('./csv-dataset')
 
     for i in range(len(csv_files)):
@@ -47,7 +51,7 @@ def create_agent():
 
     # tools = load_tools(["serpapi", "llm-math"], llm=llm)
 
-    prompt = hub.pull("hwchase17/openai-functions-agent")
+    # prompt = hub.pull("hwchase17/openai-functions-agent")
 
     # agent = create_csv_agent(llm, csv_files, verbose=False,memory = ConversationBufferMemory(memory_key = 'chat_history'))
 
@@ -57,17 +61,17 @@ def create_agent():
 
     df = pd.read_csv("state.csv")
 
-    loader = CSVLoader(file_path="./state.csv")
+    # loader = CSVLoader(file_path="./state.csv")
 
-    data = loader.load()
+    # data = loader.load()
 
-    text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=1000, chunk_overlap=0)
+    # text_splitter = CharacterTextSplitter.from_tiktoken_encoder(chunk_size=1000, chunk_overlap=0)
 
-    texts = text_splitter.split_text(data)
+    # texts = text_splitter.split_text(data)
 
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+    # embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 
-    db = ''.join(Chroma.from_documents(texts, embeddings))
+    # db = ''.join(Chroma.from_documents(texts, embeddings))
     
     llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
@@ -80,16 +84,14 @@ def create_agent():
 
     # agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
-    # agent = create_csv_agent(OpenAI(temperature=0), ['state.csv', 'suburb.csv'], verbose=False)
+    agent = create_csv_agent(OpenAI(temperature=0), ['state.csv', 'suburb.csv'], verbose=False)
 
     while True:
-        question = input("what do you want to ask?")
+        # question = input("what do you want to ask?")
+        print(question)
         answer = agent.run(question)
         if question == 'exit':
            break
-        
-         
-        
         
         return answer
 
